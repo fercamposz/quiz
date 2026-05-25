@@ -1,635 +1,166 @@
-import { useState } from 'react'
-
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
 import { motion } from 'framer-motion'
-
 import { treasures } from '../data/treasures'
 import { quizzes } from '../data/quizzes'
-
-import useGeolocation from '../hooks/useGeolocation'
-
 import { useGameStore } from '../store/gameStore'
-
 import QuizModal from '../components/QuizModal'
-
-export default function MapPage() {
-
-  const navigate = useNavigate()
-
-  const { error } = useGeolocation()
-
-  const {
-    unlocked,
-    unlockPoint,
-    addClue,
-    completeQuiz,
-    solvedQuiz
-  } = useGameStore()
-
-  const [activeQuiz, setActiveQuiz] =
-    useState(null)
-
-  // =========================
-  // VIDAS
-  // =========================
-
-  const [hearts, setHearts] =
-    useState(3)
-
-  // =========================
-  // CLICK TESOURO
-  // =========================
-
-  function handleTreasure(id) {
-
-    const isUnlocked =
-      unlocked.includes(id)
-
-    if (!isUnlocked) {
-      return
-    }
-
-    const alreadySolved =
-      solvedQuiz.includes(id)
-
-    if (alreadySolved) {
-
-      alert(
-        'Esse nível já foi concluído ✨'
-      )
-
-      return
-    }
-
-    const quiz =
-      quizzes.find(
-        (q) => q.id === id
-      )
-
-    if (!quiz) return
-
-    setActiveQuiz(quiz)
-
-  }
-
-  // =========================
-  // RESPONDER QUIZ
-  // =========================
-
-  function answerQuiz(answer) {
-
-    if (!activeQuiz) return
-
-    // =========================
-    // RESPOSTA CORRETA
-    // =========================
-
-    if (
-      answer === activeQuiz.correct
-    ) {
-
-      // SALVA COMO CONCLUÍDO
-
-      completeQuiz(activeQuiz.id)
-
-      // ADICIONA PISTA
-
-      const clue =
-        treasures.find(
-          (t) =>
-            t.id === activeQuiz.id
-        )
-
-      if (clue) {
-
-        addClue(clue.clue)
-
-      }
-
-      // LIBERA O PRÓXIMO
-
-      const currentIndex =
-        treasures.findIndex(
-          (t) =>
-            t.id === activeQuiz.id
-        )
-
-      const nextTreasure =
-        treasures[currentIndex + 1]
-
-      if (nextTreasure) {
-
-        unlockPoint(
-          nextTreasure.id
-        )
-
-      }
-
-      alert(
-        'Resposta correta! ✨ Novo nível desbloqueado!'
-      )
-
-    }
-
-    // =========================
-    // RESPOSTA ERRADA
-    // =========================
-
-    else {
-
-      setHearts((prev) => {
-
-        const newHearts =
-          prev - 1
-
-        // GAME OVER
-
-        if (newHearts <= 0) {
-
-          alert(
-            'Game Over 😭'
-          )
-
-          return 3
-        }
-
-        alert(
-          `Você perdeu uma vida 💔`
-        )
-
-        return newHearts
-
-      })
-
-    }
-
-    setActiveQuiz(null)
-
-  }
-
-  // =========================
-  // POSIÇÕES
-  // =========================
-
-  const pathCoordinates = [
-
-    {
-      bottom: '15%',
-      left: '20%'
-    },
-
-    {
-      bottom: '25%',
-      left: '50%'
-    },
-
-    {
-      bottom: '35%',
-      left: '75%'
-    },
-
-    {
-      bottom: '50%',
-      left: '60%'
-    },
-
-    {
-      bottom: '55%',
-      left: '30%'
-    },
-
-    {
-      bottom: '70%',
-      left: '15%'
-    },
-
-    {
-      bottom: '85%',
-      left: '40%'
-    },
-
-    {
-      bottom: '80%',
-      left: '70%'
-    },
-
-    {
-      bottom: '90%',
-      left: '85%'
-    }
-
-  ]
-
-  // =========================
-  // RENDER
-  // =========================
+import ClueModal from '../components/ClueModal'
+import CompletedModal from '../components/CompletedModal'
+import GameOverModal from '../components/GameOverModal'
+import heartSvg from '../assets/pixel/coracao.svg'
+import starGray from '../assets/pixel/stargray.svg'
+import starPink from '../assets/pixel/star.svg'
+import kuromiGif from '../assets/pixel/kuromigif.gif'
+import mapBg from '../assets/pixel/mapa.svg'
+
+const pathCoordinates = [
+  { bottom: '7%', left: '42%' },
+  { bottom: '16%', left: '66%' },
+  { bottom: '25%', left: '31%' },
+  { bottom: '34%', left: '72%' },
+  { bottom: '43%', left: '46%' },
+  { bottom: '53%', left: '22%' },
+  { bottom: '63%', left: '62%' },
+  { bottom: '74%', left: '36%' },
+  { bottom: '84%', left: '75%' },
+  { bottom: '90%', left: '50%' }
+]
+
+function TrapModal({ heartsLeft, onClose }) {
+  const messages = ['Pegadinha fofa: essa estrela trocou a resposta de lugar.', 'Quase. A Kuromi piscou e confundiu o caminho.', 'Ops. Essa pista era uma isca rosa.']
+  const message = messages[Math.max(0, (3 - heartsLeft) % messages.length)]
 
   return (
-
-    <main className="
-      min-h-screen
-      bg-[#A8D08D]
-      relative
-      overflow-hidden
-      font-mono
-      select-none
-      flex
-      flex-col
-    ">
-
-      {/* ========================= */}
-      {/* BACKGROUND */}
-      {/* ========================= */}
-
-      <div className="
-        absolute
-        inset-0
-        pointer-events-none
-        z-0
-      ">
-
-        <svg
-          className="
-            absolute
-            inset-0
-            w-full
-            h-full
-          "
-          preserveAspectRatio="none"
-        >
-
-          <path
-
-            d="
-              M 20% 85%
-              C 50% 85%, 80% 70%, 60% 50%
-              C 40% 30%, 10% 40%, 15% 30%
-              C 20% 20%, 50% 10%, 85% 10%
-            "
-
-            fill="transparent"
-
-            stroke="#E2C792"
-
-            strokeWidth="60"
-
-            strokeLinecap="round"
-
-            className="drop-shadow-md"
-
-          />
-
-        </svg>
-
-      </div>
-
-      {/* ========================= */}
-      {/* HEADER */}
-      {/* ========================= */}
-
-      <header className="
-        absolute
-        top-0
-        w-full
-        p-4
-        flex
-        justify-between
-        items-center
-        z-40
-        bg-white/50
-        backdrop-blur-md
-        border-b-4
-        border-white/80
-        shadow-sm
-      ">
-
-        {/* ========================= */}
-        {/* VIDAS */}
-        {/* ========================= */}
-
-        <div className="
-          flex
-          gap-2
-          bg-white
-          px-4
-          py-2
-          rounded-full
-          border-4
-          border-pink-200
-          shadow-sm
-        ">
-
-          {[...Array(3)].map(
-            (_, i) => (
-
-              <motion.div
-
-                key={i}
-
-                animate={{
-                  scale:
-                    i < hearts
-                      ? [1, 1.1, 1]
-                      : 1
-                }}
-
-                transition={{
-                  repeat: Infinity,
-                  duration: 1.5
-                }}
-
-                className={`
-                  text-2xl
-                  transition-all
-                  duration-300
-
-                  ${
-                    i < hearts
-                      ? 'opacity-100'
-                      : 'opacity-20 grayscale'
-                  }
-                `}
-              >
-                ❤️
-              </motion.div>
-
-            )
-          )}
-
-        </div>
-
-        {/* ========================= */}
-        {/* BOTÕES */}
-        {/* ========================= */}
-
-        <div className="
-          flex
-          gap-2
-        ">
-
-          <motion.button
-
-            whileHover={{
-              scale: 1.05
-            }}
-
-            whileTap={{
-              scale: 0.95
-            }}
-
-            onClick={() =>
-              navigate('/inventory')
-            }
-
-            className="
-              w-10
-              h-10
-              bg-blue-400
-              text-white
-              rounded-full
-              border-4
-              border-white
-              shadow-[2px_2px_0px_#1e3a8a]
-              flex
-              items-center
-              justify-center
-              font-black
-            "
-          >
-            🎒
-          </motion.button>
-
-          <motion.button
-
-            whileHover={{
-              scale: 1.05
-            }}
-
-            whileTap={{
-              scale: 0.95
-            }}
-
-            onClick={() =>
-              navigate('/final')
-            }
-
-            className="
-              w-10
-              h-10
-              bg-pink-400
-              text-white
-              rounded-full
-              border-4
-              border-white
-              shadow-[2px_2px_0px_#831843]
-              flex
-              items-center
-              justify-center
-              font-black
-            "
-          >
-            🏆
-          </motion.button>
-
-        </div>
-
-      </header>
-
-      {/* ========================= */}
-      {/* MAPA */}
-      {/* ========================= */}
-
-      <div className="
-        relative
-        z-10
-        flex-1
-        w-full
-        h-full
-      ">
-
-        {treasures.map(
-          (treasure, index) => {
-
-            const isUnlocked =
-              unlocked.includes(
-                treasure.id
-              )
-
-            const isSolved =
-              solvedQuiz.includes(
-                treasure.id
-              )
-
-            const position =
-              pathCoordinates[index] || {
-
-                bottom: '50%',
-                left: '50%'
-
-              }
-
-            return (
-
-              <motion.button
-
-                key={treasure.id}
-
-                onClick={() =>
-                  handleTreasure(
-                    treasure.id
-                  )
-                }
-
-                disabled={!isUnlocked}
-
-                whileHover={
-                  isUnlocked
-                    ? { scale: 1.1 }
-                    : {}
-                }
-
-                whileTap={
-                  isUnlocked
-                    ? { scale: 0.9 }
-                    : {}
-                }
-
-                animate={
-                  isUnlocked &&
-                  !isSolved
-
-                    ? {
-                        y: [
-                          -3,
-                          3,
-                          -3
-                        ]
-                      }
-
-                    : {}
-                }
-
-                transition={{
-                  repeat: Infinity,
-                  duration: 1.5,
-                  ease: 'easeInOut'
-                }}
-
-                className={`
-                  absolute
-                  flex
-                  items-center
-                  justify-center
-                  z-20
-                  transition-all
-                  duration-500
-                  w-16
-                  h-16
-                  md:w-20
-                  md:h-20
-                  rounded-full
-                  border-4
-                  shadow-[4px_4px_0px_rgba(0,0,0,0.1)]
-
-                  ${
-                    isUnlocked
-
-                      ? isSolved
-
-                        ? 'bg-pink-300 border-white'
-
-                        : 'bg-pink-500 border-white'
-
-                      : 'bg-gray-300 border-gray-400 opacity-80 cursor-not-allowed'
-                  }
-                `}
-
-                style={{
-                  bottom:
-                    position.bottom,
-
-                  left:
-                    position.left,
-
-                  transform:
-                    'translate(-50%, 50%)'
-                }}
-
-              >
-
-                <span className={`
-                  text-xl
-                  font-black
-
-                  ${
-                    isUnlocked
-                      ? 'text-white'
-                      : 'text-gray-500'
-                  }
-                `}>
-                  {index + 1}
-                </span>
-
-              </motion.button>
-
-            )
-
-          }
-        )}
-
-        {/* ========================= */}
-        {/* ERRO GPS */}
-        {/* ========================= */}
-
-        {error && (
-
-          <div className="
-            fixed
-            bottom-6
-            left-1/2
-            -translate-x-1/2
-            w-[90%]
-            max-w-sm
-            bg-white
-            border-4
-            border-red-400
-            p-4
-            rounded-2xl
-            shadow-[6px_6px_0px_#991b1b]
-            z-50
-            text-center
-          ">
-
-            <p className="
-              text-red-600
-              font-bold
-              text-xs
-            ">
-              {error}
-            </p>
-
-          </div>
-
-        )}
-
-      </div>
-
-      {/* ========================= */}
-      {/* MODAL */}
-      {/* ========================= */}
-
-      {activeQuiz && (
-
-        <QuizModal
-          quiz={activeQuiz}
-          onAnswer={answerQuiz}
-        />
-
-      )}
-
-    </main>
-
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#100716]/75 p-4 backdrop-blur-md">
+      <motion.div initial={{ opacity: 0, scale: 0.82, rotate: -2 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} className="relative w-full max-w-sm border-[6px] border-[#b6b6b6] bg-white p-5 text-center text-[#35112f] shadow-[8px_8px_0_#f9a8d4]">
+        <motion.div animate={{ x: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 0.35 }} className="mx-auto mb-4 h-16 w-20 border-4 border-[#f9a8d4] bg-[#fce7f3]">
+          <div className="mx-auto mt-4 h-6 w-8 bg-[#ec4899]" />
+        </motion.div>
+        <p className="text-xs font-black uppercase tracking-[0.28em] text-[#be185d]">Resposta surpresa</p>
+        <p className="my-5 text-base font-black leading-7">{message}</p>
+        <p className="mb-5 text-sm font-bold text-[#831843]">Vidas restantes: {heartsLeft}</p>
+        <button onClick={onClose} className="w-full border-4 border-white bg-[#ec4899] px-5 py-4 text-sm font-black uppercase tracking-widest text-white shadow-[4px_4px_0_#831843] transition-transform active:translate-y-1">Continuar</button>
+      </motion.div>
+    </div>
   )
+}
 
+export default function MapPage() {
+  const navigate = useNavigate()
+  const mapRef = useRef(null)
+  const isDragging = useRef(false)
+  const startY = useRef(0)
+  const scrollTop = useRef(0)
+  const { unlocked, unlockPoint, addClue, completeQuiz, solvedQuiz, resetGame, hearts, loseHeart } = useGameStore()
+  const [activeQuiz, setActiveQuiz] = useState(null)
+  const [showClue, setShowClue] = useState(null)
+  const [showCompleted, setShowCompleted] = useState(false)
+  const [showGameOver, setShowGameOver] = useState(false)
+  const [trap, setTrap] = useState(null)
+  const progress = Math.round((solvedQuiz.length / treasures.length) * 100)
+  const currentIndex = Math.min(solvedQuiz.length, pathCoordinates.length - 1)
+  const kuromiPos = pathCoordinates[currentIndex]
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const bottomPercent = Number.parseFloat(kuromiPos.bottom)
+    const maxScroll = map.scrollHeight - map.clientHeight
+    const target = maxScroll * (1 - bottomPercent / 100) + map.clientHeight * 0.18
+    map.scrollTop = Math.max(0, Math.min(maxScroll, target))
+  }, [kuromiPos.bottom])
+
+  function startDrag(pageY) {
+    isDragging.current = true
+    startY.current = pageY - mapRef.current.offsetTop
+    scrollTop.current = mapRef.current.scrollTop
+  }
+
+  function moveDrag(pageY) {
+    if (!isDragging.current) return
+    const y = pageY - mapRef.current.offsetTop
+    mapRef.current.scrollTop = scrollTop.current - (y - startY.current) * 2
+  }
+
+  function handleTreasure(id) {
+    if (!unlocked.includes(id)) return
+    if (solvedQuiz.includes(id)) {
+      setShowCompleted(true)
+      return
+    }
+    const quiz = quizzes.find((item) => item.id === id)
+    if (quiz) setActiveQuiz(quiz)
+  }
+
+  function answerQuiz(answer) {
+    if (!activeQuiz) return
+    if (answer === activeQuiz.correct) {
+      completeQuiz(activeQuiz.id)
+      const clue = treasures.find((item) => item.id === activeQuiz.id)
+      if (clue) {
+        addClue(clue)
+        setShowClue(clue)
+      }
+      if (activeQuiz.id < treasures.length) unlockPoint(activeQuiz.id + 1)
+    } else {
+      const nextHearts = loseHeart()
+      if (nextHearts <= 0) setShowGameOver(true)
+      else setTrap(nextHearts)
+    }
+    setActiveQuiz(null)
+  }
+
+  function restartGame() {
+    resetGame()
+    setShowGameOver(false)
+  }
+
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-[#ffd1e4] font-mono text-white select-none">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,.95)_0_8%,transparent_9%),radial-gradient(circle_at_70%_16%,rgba(255,255,255,.85)_0_7%,transparent_8%),linear-gradient(#ffd1e4,#f9a8d4)]" />
+      <header className="fixed left-0 top-0 z-50 flex w-full items-start justify-between gap-3 p-3 sm:p-4">
+        <section className="border-4 border-[#2a1028] bg-white p-3 text-[#35112f] shadow-[5px_5px_0_#f9a8d4]">
+          <div className="mb-2 flex items-center gap-2">
+            {[0, 1, 2].map((item) => <img key={item} src={heartSvg} alt="" className={`h-7 w-7 sm:h-9 sm:w-9 ${item < hearts ? 'opacity-100' : 'opacity-20 grayscale'}`} />)}
+          </div>
+          <div className="h-4 w-32 overflow-hidden border-4 border-[#2a1028] bg-[#2a1028] sm:w-44">
+            <motion.div initial={false} animate={{ width: `${progress}%` }} className="h-full bg-[#ec4899]" />
+          </div>
+          <p className="mt-2 text-[10px] font-black uppercase tracking-widest sm:text-xs">{solvedQuiz.length}/{treasures.length} estrelas</p>
+        </section>
+        <nav className="flex flex-col gap-2 sm:flex-row">
+          <button onClick={() => navigate('/inventory')} className="border-4 border-[#2a1028] bg-white px-4 py-3 text-xs font-black uppercase tracking-widest text-[#db2777] shadow-[4px_4px_0_#f9a8d4] transition-transform active:translate-y-1 sm:text-sm">Inventario</button>
+          <button onClick={() => navigate('/final')} className="border-4 border-[#2a1028] bg-[#f9a8d4] px-4 py-3 text-xs font-black uppercase tracking-widest text-white shadow-[4px_4px_0_#831843] transition-transform active:translate-y-1 sm:text-sm">Portal</button>
+        </nav>
+      </header>
+      <div ref={mapRef} onMouseDown={(event) => startDrag(event.pageY)} onMouseMove={(event) => { event.preventDefault(); moveDrag(event.pageY) }} onMouseUp={() => { isDragging.current = false }} onMouseLeave={() => { isDragging.current = false }} onTouchStart={(event) => startDrag(event.touches[0].pageY)} onTouchMove={(event) => moveDrag(event.touches[0].pageY)} onTouchEnd={() => { isDragging.current = false }} className="relative z-10 h-screen w-full cursor-grab overflow-y-scroll overflow-x-hidden active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="relative h-[1900px] w-full overflow-hidden bg-[#fbcfe8] sm:h-[2200px] lg:h-[2400px]">
+          <img src={mapBg} alt="Mapa vertical do Treasure Hunt" draggable="false" className="absolute inset-0 h-full w-full object-cover pointer-events-none" />
+          <motion.img initial={false} src={kuromiGif} alt="Personagem no mapa" animate={{ bottom: kuromiPos.bottom, left: kuromiPos.left }} transition={{ type: 'spring', stiffness: 42, damping: 15 }} className="absolute z-40 w-12 drop-shadow-xl pointer-events-none sm:w-16 md:w-20 lg:w-24 xl:w-28" style={{ bottom: kuromiPos.bottom, left: kuromiPos.left, transform: 'translate(65%, 10%)' }} />
+          {treasures.map((treasure, index) => {
+            const position = pathCoordinates[index]
+            const isUnlocked = unlocked.includes(treasure.id)
+            const isSolved = solvedQuiz.includes(treasure.id)
+            const isFinalReady = treasure.id === 10 && isUnlocked && !isSolved
+            return (
+              <div key={treasure.id} className={`absolute touch-manipulation ${isFinalReady ? 'z-[70]' : 'z-30'}`} style={{ bottom: position.bottom, left: position.left, transform: 'translate(-50%, 50%)' }}>
+                <motion.button onClick={() => handleTreasure(treasure.id)} disabled={!isUnlocked} animate={isFinalReady ? { rotate: [0, 12, -12, 0], scale: [1, 1.18, 1] } : isUnlocked && !isSolved ? { y: [-4, 4, -4] } : {}} transition={{ repeat: Infinity, duration: isFinalReady ? 1.25 : 2 }} className="relative block h-20 w-20 sm:h-24 sm:w-24 md:h-32 md:w-32 lg:h-40 lg:w-40 xl:h-44 xl:w-44" aria-label={`Fase ${treasure.id}`}>
+                  {isFinalReady && <motion.span animate={{ opacity: [0.2, 0.9, 0.2], scale: [1, 1.7, 1] }} transition={{ repeat: Infinity, duration: 1.4 }} className="absolute inset-0 bg-white/60 blur-md" />}
+                  <img src={isSolved ? starPink : starGray} alt="" draggable="false" className={`h-full w-full drop-shadow-xl pointer-events-none ${isUnlocked ? 'opacity-100' : 'opacity-55 grayscale'}`} />
+                  <span className="absolute inset-0 flex items-center justify-center text-xl font-black text-white drop-shadow-lg pointer-events-none sm:text-2xl md:text-4xl lg:text-5xl">{treasure.id}</span>
+                </motion.button>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      <footer className="fixed bottom-3 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-2xl -translate-x-1/2 border-4 border-[#2a1028] bg-white p-3 text-center text-xs font-black text-[#35112f] shadow-[5px_5px_0_#f9a8d4] sm:text-sm">Arraste o mapa, toque nas estrelas e guarde as pistas no inventario.</footer>
+      {activeQuiz && <QuizModal quiz={activeQuiz} onAnswer={answerQuiz} />}
+      {showClue && <ClueModal clue={showClue} onClose={() => setShowClue(null)} />}
+      {showCompleted && <CompletedModal onClose={() => setShowCompleted(false)} />}
+      {showGameOver && <GameOverModal onRestart={restartGame} />}
+      {trap && <TrapModal heartsLeft={trap} onClose={() => setTrap(null)} />}
+    </main>
+  )
 }

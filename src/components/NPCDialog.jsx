@@ -1,38 +1,23 @@
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import kuromiGif from '../assets/pixel/kuromigif.gif'
 
-export default function NPCDialog({ text }) {
+export default function NPCDialog({ text, npcName = 'Guia', avatar = kuromiGif, show = true }) {
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-lg z-50">
-      
-      {/* Caixa de diálogo estilo RPG retro */}
-      <div className="bg-white border-4 border-pink-400 rounded-2xl p-4 shadow-[6px_6px_0px_#97266d] flex gap-4 items-center relative">
-        
-        {/* Avatar animado do NPC */}
-        <motion.div 
-          animate={{ y: [-3, 3, -3] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          className="shrink-0 w-16 h-16 bg-pink-100 rounded-full border-4 border-pink-400 flex items-center justify-center text-3xl shadow-inner"
-        >
-          🧚
+    <AnimatePresence>
+      {show && (
+        <motion.div initial={{ opacity: 0, y: 80 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 80 }} transition={{ type: 'spring', stiffness: 120, damping: 15 }} className="fixed bottom-4 left-1/2 z-50 w-[92%] max-w-2xl -translate-x-1/2 pointer-events-none">
+          <div className="relative flex items-start gap-4 overflow-hidden border-[5px] border-white bg-[#fff1f7] p-4 text-[#35112f] shadow-[8px_8px_0_#831843] backdrop-blur-md sm:p-5">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center border-4 border-[#f9a8d4] bg-white sm:h-20 sm:w-20">
+              <img src={avatar} alt="" className="h-full w-full object-contain" />
+            </div>
+            <div className="flex-1">
+              <div className="mb-3 inline-block border-2 border-white bg-[#ec4899] px-4 py-1 text-xs font-black uppercase tracking-widest text-white shadow-[3px_3px_0_#831843]">{npcName}</div>
+              <p className="text-sm font-bold leading-7 sm:text-base">{text}</p>
+            </div>
+            <div className="absolute bottom-3 right-4 h-3 w-3 animate-pulse bg-[#ec4899]" />
+          </div>
         </motion.div>
-
-        {/* Texto do NPC */}
-        <div className="flex-1">
-          <p className="text-pink-900 font-bold text-xs md:text-sm leading-relaxed tracking-wide">
-            {text}
-          </p>
-        </div>
-
-        {/* Setinha indicadora de continuar estilo retro */}
-        <motion.div 
-          animate={{ opacity: [1, 0, 1] }} 
-          transition={{ repeat: Infinity, duration: 1 }}
-          className="absolute bottom-2 right-4 text-pink-400 text-xl"
-        >
-          ▼
-        </motion.div>
-
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   )
 }

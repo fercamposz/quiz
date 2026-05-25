@@ -1,164 +1,42 @@
 import { create } from 'zustand'
 
-const saved = JSON.parse(
-  localStorage.getItem('treasure-game')
-)
+const initialGame = { unlocked: [1], clues: [], solvedQuiz: [], hearts: 3 }
+const saved = JSON.parse(localStorage.getItem('treasure-game') || 'null')
+const persist = (state) => localStorage.setItem('treasure-game', JSON.stringify({ unlocked: state.unlocked, clues: state.clues, solvedQuiz: state.solvedQuiz, hearts: state.hearts }))
 
 export const useGameStore = create((set) => ({
-
-  unlocked:
-    saved?.unlocked || [1],
-
-  clues:
-    saved?.clues || [],
-
-  solvedQuiz:
-    saved?.solvedQuiz || [],
-
-  hearts:
-    saved?.hearts || 3,
-
-  // =========================
-  // DESBLOQUEAR
-  // =========================
-
-  unlockPoint: (id) =>
-
+  ...initialGame,
+  ...saved,
+  unlockPoint: (id) => set((state) => {
+    if (state.unlocked.includes(id)) return state
+    const updated = { ...state, unlocked: [...state.unlocked, id] }
+    persist(updated)
+    return updated
+  }),
+  addClue: (clue) => set((state) => {
+    if (state.clues.some((item) => item.id === clue.id)) return state
+    const updated = { ...state, clues: [...state.clues, clue] }
+    persist(updated)
+    return updated
+  }),
+  completeQuiz: (id) => set((state) => {
+    if (state.solvedQuiz.includes(id)) return state
+    const updated = { ...state, solvedQuiz: [...state.solvedQuiz, id] }
+    persist(updated)
+    return updated
+  }),
+  loseHeart: () => {
+    let nextHearts = 0
     set((state) => {
-
-      const updated = {
-
-        ...state,
-
-        unlocked: [
-          ...new Set([
-            ...state.unlocked,
-            id
-          ])
-        ]
-
-      }
-
-      localStorage.setItem(
-        'treasure-game',
-        JSON.stringify(updated)
-      )
-
+      nextHearts = Math.max(state.hearts - 1, 0)
+      const updated = { ...state, hearts: nextHearts }
+      persist(updated)
       return updated
-
-    }),
-
-  // =========================
-  // PISTAS
-  // =========================
-
-  addClue: (clue) =>
-
-    set((state) => {
-
-      const updated = {
-
-        ...state,
-
-        clues: [
-          ...state.clues,
-          clue
-        ]
-
-      }
-
-      localStorage.setItem(
-        'treasure-game',
-        JSON.stringify(updated)
-      )
-
-      return updated
-
-    }),
-
-  // =========================
-  // QUIZ
-  // =========================
-
-  completeQuiz: (id) =>
-
-    set((state) => {
-
-      const updated = {
-
-        ...state,
-
-        solvedQuiz: [
-          ...new Set([
-            ...state.solvedQuiz,
-            id
-          ])
-        ]
-
-      }
-
-      localStorage.setItem(
-        'treasure-game',
-        JSON.stringify(updated)
-      )
-
-      return updated
-
-    }),
-
-  // =========================
-  // PERDER VIDA
-  // =========================
-
-  loseHeart: () =>
-
-    set((state) => {
-
-      const newHearts =
-        state.hearts - 1
-
-      const updated = {
-
-        ...state,
-
-        hearts:
-          newHearts <= 0
-            ? 0
-            : newHearts
-
-      }
-
-      localStorage.setItem(
-        'treasure-game',
-        JSON.stringify(updated)
-      )
-
-      return updated
-
-    }),
-
-  // =========================
-  // RESET
-  // =========================
-
+    })
+    return nextHearts
+  },
   resetGame: () => {
-
-    const reset = {
-
-      unlocked: [1],
-      clues: [],
-      solvedQuiz: [],
-      hearts: 3
-
-    }
-
-    localStorage.setItem(
-      'treasure-game',
-      JSON.stringify(reset)
-    )
-
-    set(reset)
-
+    persist(initialGame)
+    set(initialGame)
   }
-
 }))

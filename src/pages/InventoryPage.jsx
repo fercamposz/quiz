@@ -1,443 +1,58 @@
-import {
-  DndContext,
-  closestCenter
-} from '@dnd-kit/core'
-
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-  useSortable
-} from '@dnd-kit/sortable'
-
-import { CSS } from '@dnd-kit/utilities'
-
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-
 import { useGameStore } from '../store/gameStore'
-
-// ==============================
-// ITEM ARRASTÁVEL
-// ==============================
-
-function SortableItem({ id, index }) {
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 50 : 1
-  }
-
-  return (
-
-    <motion.div
-
-      ref={setNodeRef}
-
-      style={style}
-
-      {...attributes}
-      {...listeners}
-
-      whileHover={{
-        scale: 1.02
-      }}
-
-      whileTap={{
-        scale: 0.98
-      }}
-
-      className={`
-        bg-white
-        border-4
-        rounded-2xl
-        p-4
-        flex
-        items-center
-        gap-4
-        cursor-grab
-        active:cursor-grabbing
-        transition-all
-        duration-300
-
-        ${
-          isDragging
-            ? 'border-pink-500 shadow-xl opacity-90 scale-105'
-            : 'border-pink-400 shadow-[4px_4px_0px_#97266d]'
-        }
-      `}
-    >
-
-      {/* HANDLE */}
-
-      <div className="
-        text-pink-300
-        text-xl
-        flex
-        flex-col
-        gap-1
-      ">
-
-        <span className="
-          block
-          w-4
-          h-1
-          bg-pink-300
-          rounded-full
-        "></span>
-
-        <span className="
-          block
-          w-4
-          h-1
-          bg-pink-300
-          rounded-full
-        "></span>
-
-        <span className="
-          block
-          w-4
-          h-1
-          bg-pink-300
-          rounded-full
-        "></span>
-
-      </div>
-
-      {/* TEXTO */}
-
-      <div className="flex-1">
-
-        <span className="
-          text-pink-900
-          font-bold
-          text-sm
-          leading-relaxed
-          block
-        ">
-          {id}
-        </span>
-
-      </div>
-
-      {/* NUMERO */}
-
-      <div className="
-        w-8
-        h-8
-        rounded-full
-        bg-pink-100
-        border-2
-        border-pink-300
-        flex
-        items-center
-        justify-center
-        text-pink-500
-        font-black
-        text-xs
-        shrink-0
-      ">
-        {index + 1}
-      </div>
-
-    </motion.div>
-
-  )
-}
-
-// ==============================
-// PAGINA INVENTARIO
-// ==============================
+import { finalPassword } from '../data/treasures'
+import starPink from '../assets/pixel/star.svg'
+import heartSvg from '../assets/pixel/coracao.svg'
 
 export default function InventoryPage() {
-
   const navigate = useNavigate()
-
-  const { clues } = useGameStore()
-
-  const [items, setItems] = useState(
-    () => [...clues]
-  )
-
-  // ==============================
-  // DRAG END
-  // ==============================
-
-  function handleDragEnd(event) {
-
-    const { active, over } = event
-
-    if (!over) return
-
-    if (active.id !== over.id) {
-
-      setItems((items) => {
-
-        const oldIndex =
-          items.indexOf(active.id)
-
-        const newIndex =
-          items.indexOf(over.id)
-
-        return arrayMove(
-          items,
-          oldIndex,
-          newIndex
-        )
-
-      })
-
-    }
-
-  }
-
-  // ==============================
-  // RENDER
-  // ==============================
+  const { clues, solvedQuiz } = useGameStore()
+  const passwordUnlocked = solvedQuiz.includes(10)
 
   return (
-
-    <main className="
-      min-h-screen
-      bg-gradient-to-b
-      from-pink-200
-      to-pink-100
-      p-6
-      select-none
-      relative
-      overflow-hidden
-      flex
-      flex-col
-    ">
-
-      {/* BACKGROUND */}
-
-      <div className="
-        absolute
-        inset-0
-        pointer-events-none
-        opacity-50
-        z-0
-      ">
-
-        <div className="
-          absolute
-          top-10
-          left-10
-          text-white
-          text-3xl
-        ">
-          ✨
-        </div>
-
-        <div className="
-          absolute
-          top-32
-          right-10
-          text-white
-          text-2xl
-        ">
-          ☁️
-        </div>
-
-        <div className="
-          absolute
-          bottom-20
-          left-1/4
-          text-white
-          text-xl
-        ">
-          🌸
-        </div>
-
-      </div>
-
-      {/* CONTAINER */}
-
-      <div className="
-        relative
-        z-10
-        w-full
-        max-w-md
-        mx-auto
-        flex-1
-        flex
-        flex-col
-      ">
-
-        {/* HEADER */}
-
-        <header className="
-          flex
-          items-center
-          justify-between
-          mb-8
-          gap-4
-        ">
-
-          <motion.button
-
-            whileHover={{
-              scale: 1.05
-            }}
-
-            whileTap={{
-              scale: 0.95,
-              y: 2
-            }}
-
-            onClick={() => navigate(-1)}
-
-            className="
-              bg-white
-              text-pink-500
-              font-black
-              py-2
-              px-4
-              rounded-xl
-              border-4
-              border-pink-400
-              shadow-[4px_4px_0px_#97266d]
-              text-xs
-              transition-all
-            "
-          >
-            ◀ BACK
-          </motion.button>
-
-          <h1
-            className="
-              text-3xl
-              font-black
-              text-pink-400
-              tracking-widest
-              text-right
-            "
-
-            style={{
-              textShadow:
-                '2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 4px 4px 0 #b83280'
-            }}
-          >
-            INVENTORY
-          </h1>
-
+    <main className="relative min-h-screen overflow-hidden bg-[#ffd1e4] px-4 py-6 font-mono text-[#35112f] select-none sm:px-6">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(255,255,255,.95)_0_8%,transparent_9%),radial-gradient(circle_at_76%_18%,rgba(255,255,255,.9)_0_7%,transparent_8%),linear-gradient(#ffd1e4,#fbcfe8)]" />
+      <section className="relative z-10 mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-5xl flex-col">
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <button onClick={() => navigate('/map')} className="w-full border-4 border-[#2a1028] bg-white px-5 py-3 text-sm font-black uppercase tracking-widest text-[#db2777] shadow-[4px_4px_0_#f9a8d4] transition-transform active:translate-y-1 sm:w-auto">Voltar</button>
+          <div className="relative border-4 border-[#2a1028] bg-white px-6 py-4 text-center shadow-[6px_6px_0_#f9a8d4]">
+            <div className="absolute -top-5 left-1/2 flex -translate-x-1/2 gap-1">{[0, 1, 2].map((item) => <img key={item} src={starPink} alt="" className="h-8 w-8" />)}</div>
+            <h1 className="mt-2 text-3xl font-black uppercase tracking-widest text-[#db2777] sm:text-4xl" style={{ textShadow: '2px 2px 0 #fbcfe8' }}>Inventario</h1>
+            <p className="mt-1 text-xs font-black uppercase tracking-[0.24em] text-[#831843]">{solvedQuiz.length} pistas encontradas</p>
+          </div>
         </header>
-
-        {/* AREA INVENTARIO */}
-
-        <div className="
-          flex-1
-          bg-pink-50/50
-          backdrop-blur-sm
-          border-4
-          border-pink-300
-          border-dashed
-          rounded-3xl
-          p-4
-          shadow-inner
-          overflow-y-auto
-        ">
-
-          {items.length === 0 ? (
-
-            // ==============================
-            // INVENTARIO VAZIO
-            // ==============================
-
-            <div className="
-              h-full
-              flex
-              flex-col
-              items-center
-              justify-center
-              text-center
-              opacity-70
-            ">
-
-              <span className="
-                text-6xl
-                mb-4
-                grayscale
-              ">
-                🎒
-              </span>
-
-              <p className="
-                text-pink-800
-                font-bold
-                text-sm
-                leading-7
-              ">
-                Seu inventário está vazio...
-                <br />
-                Vá explorar o mapa!
-              </p>
-
+        <div className="mb-5 border-4 border-[#b6b6b6] bg-white p-4 shadow-[5px_5px_0_#f9a8d4]">
+          <div className="flex items-center gap-4">
+            <motion.img src={heartSvg} alt="" animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.5 }} className="h-14 w-14" />
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#be185d]">Bolsa de pistas</p>
+              <p className="text-sm font-bold leading-6">{passwordUnlocked ? `A senha ${finalPassword} esta guardada. O portal ja pode abrir.` : 'Leia as pistas em ordem para descobrir a palavra final.'}</p>
             </div>
-
-          ) : (
-
-            // ==============================
-            // LISTA
-            // ==============================
-
-            <DndContext
-
-              collisionDetection={
-                closestCenter
-              }
-
-              onDragEnd={handleDragEnd}
-
-            >
-
-              <SortableContext
-
-                items={items}
-
-                strategy={
-                  verticalListSortingStrategy
-                }
-
-              >
-
-                <div className="space-y-4">
-
-                  {items.map((item, index) => (
-
-                    <SortableItem
-                      key={item}
-                      id={item}
-                      index={index}
-                    />
-
-                  ))}
-
-                </div>
-
-              </SortableContext>
-
-            </DndContext>
-
-          )}
-
+          </div>
         </div>
-
-      </div>
-
+        <div className="grid flex-1 gap-4 sm:grid-cols-2">
+          {clues.length === 0 ? (
+            <div className="col-span-full flex min-h-[360px] flex-col items-center justify-center border-[6px] border-[#2a1028] bg-white p-8 text-center shadow-[8px_8px_0_#f9a8d4]">
+              <img src={starPink} alt="" className="mb-5 h-24 w-24 opacity-60 grayscale" />
+              <p className="max-w-sm text-base font-black leading-7 sm:text-lg">Nenhuma pista foi desbloqueada ainda. Volte ao mapa e venca o primeiro desafio.</p>
+            </div>
+          ) : (
+            clues.map((clue, index) => (
+              <motion.article key={clue.id} initial={{ opacity: 0, y: 18, rotate: -1 }} animate={{ opacity: 1, y: 0, rotate: 0 }} whileHover={{ y: -4, rotate: index % 2 ? 1 : -1 }} transition={{ delay: index * 0.04 }} className="relative flex gap-4 border-4 border-[#b6b6b6] bg-white p-4 shadow-[6px_6px_0_#f9a8d4]">
+                <div className="absolute -bottom-4 left-10 h-4 w-7 border-b-4 border-l-4 border-[#b6b6b6] bg-white" />
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center border-4 border-[#2a1028] bg-[#fff1f7]">
+                  <img src={clue.id === 10 ? heartSvg : starPink} alt="" className="h-10 w-10" />
+                </div>
+                <div>
+                  <p className="mb-2 text-xs font-black uppercase tracking-[0.24em] text-[#be185d]">Pista {index + 1}</p>
+                  <p className="text-sm font-bold leading-6 sm:text-base">{clue.clue}</p>
+                </div>
+              </motion.article>
+            ))
+          )}
+        </div>
+      </section>
     </main>
-
   )
 }

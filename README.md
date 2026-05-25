@@ -1,16 +1,117 @@
-# React + Vite
+# Treasure Hunt
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Um jogo de caca ao tesouro em estilo pixel/kawaii feito com React, Vite, Tailwind CSS, Framer Motion e Zustand.
 
-Currently, two official plugins are available:
+O jogador percorre um mapa vertical, responde quizzes de conhecimentos gerais, coleta pistas no inventario e usa a palavra final para abrir o portal do premio.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Visual do jogo
 
-## React Compiler
+- Tela inicial com fundo pixelado, brilho, coracoes e painel de instrucoes.
+- Mapa vertical responsivo com estrelas fixas no caminho.
+- Quiz animado para cada estrela.
+- Inventario com pistas em formato de balao.
+- Portal final com senha e animacao de estrela girando.
+- Premio final com brilho e clima de jogo retrô.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tecnologias
 
-## Expanding the ESLint configuration
+- React
+- Vite
+- Tailwind CSS
+- Framer Motion
+- Zustand
+- React Router
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Como rodar
+
+Instale as dependencias:
+
+```bash
+npm install
+```
+
+Inicie o servidor de desenvolvimento:
+
+```bash
+npm run dev
+```
+
+Abra no navegador:
+
+```text
+http://localhost:5173
+```
+
+## Scripts
+
+Rodar em modo desenvolvimento:
+
+```bash
+npm run dev
+```
+
+Gerar build de producao:
+
+```bash
+npm run build
+```
+
+Verificar o codigo com ESLint:
+
+```bash
+npm run lint
+```
+
+Visualizar o build localmente:
+
+```bash
+npm run preview
+```
+
+## Rotas
+
+```text
+/            Tela inicial
+/map         Mapa principal
+/inventory   Inventario de pistas
+/final       Portal final
+/ending      Premio final
+```
+
+## Como jogar
+
+1. Clique em Play na tela inicial.
+2. Toque na estrela liberada no mapa.
+3. Responda corretamente ao quiz.
+4. Colete a pista no inventario.
+5. Complete as 10 estrelas.
+6. Descubra a palavra final.
+7. Digite a senha no portal.
+8. Abra o premio.
+
+## Palavra final
+
+As pistas do inventario levam ate a palavra:
+
+```text
+ESTRELA
+```
+
+Ela so e confirmada depois da estrela 10.
+
+## Estrutura principal
+
+```text
+src/
+  assets/pixel/       Imagens e assets pixelados
+  components/         Modais, botoes, dialogs e cards
+  data/               Quizzes e pistas
+  pages/              Telas do jogo
+  store/              Estado global do jogo
+```
+
+## Observacoes
+
+- O progresso fica salvo no `localStorage`.
+- O botao de reiniciar aparece no Game Over e na tela final.
+- O jogo nao usa GPS; e uma experiencia fechada de caca ao tesouro.

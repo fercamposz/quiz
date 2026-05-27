@@ -27,6 +27,23 @@ const pathCoordinates = [
   { bottom: '90%', left: '50%' }
 ]
 
+function randomIndex(max) {
+  const values = new Uint32Array(1)
+  window.crypto.getRandomValues(values)
+  return values[0] % max
+}
+
+function shuffle(items) {
+  const shuffled = [...items]
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomIndex(index + 1)
+    const current = shuffled[index]
+    shuffled[index] = shuffled[swapIndex]
+    shuffled[swapIndex] = current
+  }
+  return shuffled
+}
+
 function TrapModal({ heartsLeft, onClose }) {
   const messages = ['Pegadinha fofa: essa estrela trocou a resposta de lugar.', 'Quase. A Kuromi piscou e confundiu o caminho.', 'Ops. Essa pista era uma isca rosa.']
   const message = messages[Math.max(0, (3 - heartsLeft) % messages.length)]
@@ -89,8 +106,8 @@ export default function MapPage() {
       setShowCompleted(true)
       return
     }
-    const quiz = quizzes.find((item) => item.id === id)
-    if (quiz) setActiveQuiz(quiz)
+    const quiz = quizzes[randomIndex(quizzes.length)]
+    if (quiz) setActiveQuiz({ ...quiz, id, answers: shuffle(quiz.answers) })
   }
 
   function answerQuiz(answer) {
@@ -155,7 +172,7 @@ export default function MapPage() {
           })}
         </div>
       </div>
-      <footer className="fixed bottom-3 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-2xl -translate-x-1/2 border-4 border-[#2a1028] bg-white p-3 text-center text-xs font-black text-[#35112f] shadow-[5px_5px_0_#f9a8d4] sm:text-sm">Arraste o mapa, toque nas estrelas e guarde as pistas no inventario.</footer>
+      <footer className="fixed bottom-3 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-2xl -translate-x-1/2 border-4 border-[#2a1028] bg-white p-3 text-center text-xs font-black text-[#35112f] shadow-[5px_5px_0_#f9a8d4] sm:text-sm">Arraste o mapa, toque nas estrelas e junte letras para montar a palavra-chave.</footer>
       {activeQuiz && <QuizModal quiz={activeQuiz} onAnswer={answerQuiz} />}
       {showClue && <ClueModal clue={showClue} onClose={() => setShowClue(null)} />}
       {showCompleted && <CompletedModal onClose={() => setShowCompleted(false)} />}

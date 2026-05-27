@@ -7,6 +7,7 @@ export default function ClueModal({ clue, onClose }) {
   if (!clue) return null
 
   const isPrize = clue.id === 10
+  const letter = clue.letter || finalPassword[clue.id - 1] || '?'
 
   return (
     <AnimatePresence>
@@ -19,14 +20,14 @@ export default function ClueModal({ clue, onClose }) {
             <motion.span animate={{ scale: [1, 1.8, 1], opacity: [0.2, 0.8, 0.2] }} transition={{ repeat: Infinity, duration: 1.4 }} className="absolute h-full w-full bg-[#f9a8d4]/50 blur-xl" />
             <img src={isPrize ? heartSvg : starPink} alt="" className="relative h-20 w-20 drop-shadow-lg" />
           </motion.div>
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#be185d]">{isPrize ? 'Premio encontrado' : 'Nova pista'}</p>
-          <h2 className="mt-2 text-3xl font-black uppercase tracking-widest text-[#db2777]" style={{ textShadow: '2px 2px 0 #fbcfe8' }}>{isPrize ? 'Tesouro' : 'Liberada'}</h2>
+          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#be185d]">{isPrize ? 'Ultima letra' : 'Nova letra'}</p>
+          <h2 className="mt-2 text-3xl font-black uppercase tracking-widest text-[#db2777]" style={{ textShadow: '2px 2px 0 #fbcfe8' }}>Liberada</h2>
           <div className="relative my-6 border-4 border-[#b6b6b6] bg-[#fff1f7] p-5 shadow-[6px_6px_0_#f9a8d4]">
             <div className="absolute -bottom-5 left-12 h-5 w-8 border-b-4 border-l-4 border-[#b6b6b6] bg-[#fff1f7]" />
-            <p className="text-base font-black leading-7 sm:text-lg">{isPrize ? `Voce achou a ultima pista. A senha do portal foi revelada: ${finalPassword}.` : clue.clue}</p>
+            <p className="text-base font-black leading-7 sm:text-lg">{isPrize ? 'Voce encontrou a ultima letra. Agora organize tudo no inventario para acordar o portal.' : 'Guarde essa letra na bolsa e monte a palavra-chave quando todas aparecerem.'}</p>
           </div>
-          {isPrize && <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-5 grid grid-cols-7 gap-2">{finalPassword.split('').map((letter) => <span key={letter} className="border-4 border-[#2a1028] bg-[#f9a8d4] py-2 text-lg font-black text-white shadow-[3px_3px_0_#831843]">{letter}</span>)}</motion.div>}
-          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={onClose} className="w-full border-4 border-[#2a1028] bg-[#ec4899] py-4 text-base font-black uppercase tracking-widest text-white shadow-[4px_4px_0_#831843] transition-colors hover:bg-[#f472b6]">{isPrize ? 'Ir ao portal depois' : 'Continuar'}</motion.button>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto mb-5 flex h-24 w-24 items-center justify-center border-4 border-[#2a1028] bg-[#f9a8d4] text-5xl font-black text-white shadow-[5px_5px_0_#831843]" style={{ textShadow: '2px 2px 0 #db2777' }}>{letter}</motion.div>
+          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={onClose} className="w-full border-4 border-[#2a1028] bg-[#ec4899] py-4 text-base font-black uppercase tracking-widest text-white shadow-[4px_4px_0_#831843] transition-colors hover:bg-[#f472b6]">{isPrize ? 'Montar no inventario' : 'Continuar'}</motion.button>
         </motion.div>
       </div>
     </AnimatePresence>

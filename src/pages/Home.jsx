@@ -19,7 +19,7 @@ const sparkles = [
 
 export default function Home() {
   const navigate = useNavigate()
-  const dialogs = ['Bem-vinda ao Treasure Hunt.', 'Responda perguntas sobre o mundo para liberar estrelas.', 'Cada estrela entrega uma pista da palavra final.', 'A estrela 10 confirma a senha do portal.']
+  const dialogs = ['Bem-vinda ao Treasure Hunt.', 'Responda perguntas sobre o mundo para liberar estrelas.', 'Cada estrela entrega uma letra da palavra-chave.', 'No inventario, arraste as letras baguncadas para abrir o portal.']
   const [step, setStep] = useState(0)
   const finished = step >= dialogs.length
 
@@ -41,7 +41,7 @@ export default function Home() {
         <AnimatePresence mode="wait">
           {!finished ? (
             <motion.section key="dialog" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex w-full max-w-xl flex-col items-center">
-              <motion.img src={kuromiGif} alt="Personagem guia do jogo" animate={{ y: [-8, 8, -8], rotate: [-2, 2, -2] }} transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }} className="w-36 drop-shadow-[0_14px_18px_rgba(236,72,153,.5)] sm:w-48" />
+              <motion.img src={kuromiGif} alt="Personagem guia do jogo" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="w-36 drop-shadow-[0_14px_18px_rgba(236,72,153,.5)] sm:w-48" />
               <motion.div key={step} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="relative w-full border-4 border-[#b6b6b6] bg-white p-5 text-center text-[#35112f] shadow-[7px_7px_0_#f9a8d4]">
                 <div className="absolute -bottom-5 left-12 h-5 w-10 border-b-4 border-l-4 border-[#b6b6b6] bg-white" />
                 <p className="text-base font-black leading-7 sm:text-lg">{dialogs[step]}</p>
@@ -49,11 +49,30 @@ export default function Home() {
               </motion.div>
             </motion.section>
           ) : (
-            <motion.section key="start" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="relative flex w-full max-w-4xl flex-col items-center text-center">
-              <motion.h1 initial={{ y: 20 }} animate={{ y: 0 }} className="text-5xl font-black uppercase leading-[0.88] tracking-widest text-[#f9a8d4] sm:text-7xl md:text-8xl" style={{ WebkitTextStroke: '3px #8a1742', textShadow: '5px 5px 0 #fff, 9px 9px 0 #db2777' }}>Treasure<br />Hunt</motion.h1>
-              <p className="mt-5 max-w-md border-4 border-white bg-[#ec4899]/90 px-5 py-3 text-xs font-black uppercase tracking-[0.22em] text-white shadow-[5px_5px_0_#8a1742] sm:text-sm">Descubra a palavra final pelas estrelas</p>
-              <motion.img src={kuromiGif} alt="" animate={{ y: [-6, 6, -6] }} transition={{ repeat: Infinity, duration: 2.5 }} className="mt-6 w-28 drop-shadow-xl sm:w-36" />
-              <motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94, y: 5 }} onClick={() => navigate('/map')} className="mt-7 border-4 border-[#8a1742] bg-[#ec4899] px-12 py-4 text-xl font-black uppercase tracking-widest text-white shadow-[6px_6px_0_#8a1742] transition-colors hover:bg-[#f472b6] sm:px-16 sm:text-2xl">Start</motion.button>
+            <motion.section key="start" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="relative flex w-full max-w-5xl flex-col items-center text-center">
+              <div className="relative">
+                <motion.h1 initial={{ y: 20 }} animate={{ y: 0 }} className="text-5xl font-black uppercase leading-[0.88] tracking-widest text-[#f9a8d4] sm:text-7xl md:text-8xl" style={{ WebkitTextStroke: '3px #8a1742', textShadow: '5px 5px 0 #fff, 9px 9px 0 #db2777' }}>Treasure<br />Hunt</motion.h1>
+                <motion.div animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2.1 }} className="absolute -right-6 -top-8 hidden h-16 w-16 items-center justify-center border-4 border-[#8a1742] bg-white text-3xl font-black text-[#ec4899] shadow-[5px_5px_0_#db2777] sm:flex">A</motion.div>
+              </div>
+              <p className="mt-5 max-w-lg border-4 border-white bg-[#ec4899]/90 px-5 py-3 text-xs font-black uppercase tracking-[0.22em] text-white shadow-[5px_5px_0_#8a1742] sm:text-sm">Colete letras, arraste no inventario e descubra a palavra-chave</p>
+              <div className="mt-6 grid w-full max-w-xl grid-cols-3 gap-2 px-2 sm:gap-3">
+                {['E', 'S', '?'].map((letter, index) => (
+                  <motion.div key={`${letter}-${index}`} initial={{ opacity: 0, y: 18, rotate: -4 }} animate={{ opacity: 1, y: 0, rotate: index === 1 ? 2 : -2 }} transition={{ delay: index * 0.12, type: 'spring', bounce: 0.35 }} className="relative flex aspect-square items-center justify-center overflow-hidden border-4 border-[#8a1742] bg-white text-3xl font-black text-[#db2777] shadow-[5px_5px_0_#f9a8d4] sm:text-5xl" style={{ textShadow: '2px 2px 0 #fbcfe8' }}>
+                    <span className="absolute inset-x-3 top-3 h-2 bg-[#fff1f7]" />
+                    <span>{letter}</span>
+                  </motion.div>
+                ))}
+              </div>
+              <div className="mt-5 flex w-full max-w-xl items-end justify-center gap-4">
+                <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 0.7, ease: 'easeOut' }} className="hidden h-4 max-w-32 border-4 border-[#8a1742] bg-white sm:block">
+                  <div className="h-full w-2/3 bg-[#ec4899]" />
+                </motion.div>
+                <motion.img src={kuromiGif} alt="" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-28 drop-shadow-xl sm:w-36" />
+                <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 0.7, ease: 'easeOut' }} className="hidden h-4 max-w-32 border-4 border-[#8a1742] bg-white sm:block">
+                  <div className="h-full w-1/2 bg-[#f9a8d4]" />
+                </motion.div>
+              </div>
+              <motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94, y: 5 }} onClick={() => navigate('/map')} className="mt-6 border-4 border-[#8a1742] bg-[#ec4899] px-12 py-4 text-xl font-black uppercase tracking-widest text-white shadow-[6px_6px_0_#8a1742] transition-colors hover:bg-[#f472b6] sm:px-16 sm:text-2xl">Start</motion.button>
             </motion.section>
           )}
         </AnimatePresence>

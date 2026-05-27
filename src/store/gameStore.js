@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 
-const initialGame = { unlocked: [1], clues: [], solvedQuiz: [], hearts: 3 }
+const scrambleOrder = [4, 1, 8, 3, 10, 6, 2, 9, 5, 7]
+const initialGame = { unlocked: [1], clues: [], solvedQuiz: [], hearts: 3, letterOrder: [] }
 const saved = JSON.parse(localStorage.getItem('treasure-game') || 'null')
-const persist = (state) => localStorage.setItem('treasure-game', JSON.stringify({ unlocked: state.unlocked, clues: state.clues, solvedQuiz: state.solvedQuiz, hearts: state.hearts }))
+const persist = (state) => localStorage.setItem('treasure-game', JSON.stringify({ unlocked: state.unlocked, clues: state.clues, solvedQuiz: state.solvedQuiz, hearts: state.hearts, letterOrder: state.letterOrder }))
 
 export const useGameStore = create((set) => ({
   ...initialGame,
@@ -15,7 +16,14 @@ export const useGameStore = create((set) => ({
   }),
   addClue: (clue) => set((state) => {
     if (state.clues.some((item) => item.id === clue.id)) return state
-    const updated = { ...state, clues: [...state.clues, clue] }
+    const nextClues = [...state.clues, clue]
+    const nextOrder = [...new Set([...(state.letterOrder || []), clue.id])].sort((a, b) => scrambleOrder.indexOf(a) - scrambleOrder.indexOf(b))
+    const updated = { ...state, clues: nextClues, letterOrder: nextOrder }
+    persist(updated)
+    return updated
+  }),
+  setLetterOrder: (letterOrder) => set((state) => {
+    const updated = { ...state, letterOrder }
     persist(updated)
     return updated
   }),

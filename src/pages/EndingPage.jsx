@@ -29,7 +29,7 @@ export default function EndingPage() {
         <h1 className="mt-3 text-4xl font-black uppercase leading-none tracking-widest text-[#db2777] sm:text-6xl md:text-7xl" style={{ textShadow: '3px 3px 0 #fbcfe8' }}>Premio aberto</h1>
         <div className="relative mt-7 max-w-xl border-4 border-[#b6b6b6] bg-[#fff1f7] p-5 text-base font-black leading-7 shadow-[6px_6px_0_#f9a8d4] sm:text-lg">
           <div className="absolute -bottom-5 left-14 h-5 w-10 border-b-4 border-l-4 border-[#b6b6b6] bg-[#fff1f7]" />
-          Todas as estrelas foram restauradas. O tesouro secreto era uma chuva de brilho rosa.
+          Voce encontrou o certificado de mestre do tesouro. Todas as fases foram vencidas e a palavra-chave abriu o bau final.
         </div>
         <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row">
           <button onClick={() => navigate('/map')} className="w-full border-4 border-[#2a1028] bg-white px-5 py-4 text-sm font-black uppercase tracking-widest text-[#db2777] shadow-[4px_4px_0_#f9a8d4] transition-transform active:translate-y-1">Mapa</button>

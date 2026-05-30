@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DndContext, DragOverlay, PointerSensor, closestCenter, defaultDropAnimationSideEffects, useSensor, useSensors } from '@dnd-kit/core'
-import { SortableContext, arrayMove, rectSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, closestCenter, defaultDropAnimationSideEffects, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -9,7 +9,7 @@ import { finalPassword } from '../data/treasures'
 import starPink from '../assets/pixel/star.svg'
 import heartSvg from '../assets/pixel/coracao.svg'
 
-const scrambleOrder = [4, 1, 8, 3, 10, 6, 2, 9, 5, 7]
+const scrambleOrder = [4, 1, 6, 3, 7, 2, 5]
 
 function getLetter(clue) {
   return clue.letter || finalPassword[clue.id - 1] || '?'
@@ -27,9 +27,10 @@ const dropAnimation = {
   })
 }
 
-function LetterTile({ clue, isDragging = false, isOverlay = false }) {
+/* Renderiza o bloco visual de cada letra, reutilizado tanto na grade quanto no overlay do arraste. */
+function LetterTile({ clue, isDragging = false, isOverlay = false, selectedWithKeyboard = false }) {
   return (
-    <div className={`relative flex aspect-square items-center justify-center overflow-hidden border-4 border-[#2a1028] bg-white text-4xl font-black uppercase text-[#db2777] outline-none sm:text-5xl ${isOverlay ? 'scale-110 shadow-[12px_12px_0_#831843]' : 'shadow-[6px_6px_0_#f9a8d4]'} ${isDragging ? 'opacity-35' : 'opacity-100'}`}>
+    <div className={`relative flex aspect-square items-center justify-center overflow-hidden border-4 border-[#2a1028] bg-white text-4xl font-black uppercase text-[#db2777] sm:text-5xl ${isOverlay ? 'scale-110 shadow-[12px_12px_0_#831843]' : 'shadow-[6px_6px_0_#f9a8d4]'} ${isDragging ? 'opacity-35' : 'opacity-100'} ${selectedWithKeyboard ? 'ring-4 ring-[#be185d] ring-offset-4 ring-offset-[#fff1f7]' : ''}`}>
       <span className="absolute inset-x-2 top-2 h-2 bg-[#fff1f7]" />
       <span className="absolute left-1.5 top-1.5 h-2 w-2 bg-[#f9a8d4]" />
       <span className="absolute right-2 top-3 h-1.5 w-1.5 bg-[#ec4899]" />
@@ -41,6 +42,7 @@ function LetterTile({ clue, isDragging = false, isOverlay = false }) {
 
 function SortableLetter({ clue, index }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: clue.id })
+  const letter = getLetter(clue)
   const style = {
     transform: CSS.Transform.toString(transform),
     transition: transition || 'transform 260ms cubic-bezier(.2,.8,.2,1)',
@@ -58,10 +60,11 @@ function SortableLetter({ clue, index }) {
       whileHover={{ y: -5, rotate: index % 2 ? 1 : -1, scale: 1.03 }}
       whileTap={{ scale: 1.08 }}
       transition={{ delay: index * 0.035 }}
-      className={`touch-none rounded-none outline-none transition-[filter] duration-200 ${isDragging ? 'cursor-grabbing filter saturate-150' : 'cursor-grab'}`}
-      aria-label={`Letra ${getLetter(clue)}`}
+      className={`touch-none rounded-none transition-[filter] duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#be185d] focus-visible:ring-offset-4 focus-visible:ring-offset-[#fff1f7] ${isDragging ? 'cursor-grabbing filter saturate-150' : 'cursor-grab'}`}
+      aria-label={`Letra ${letter}, posicao ${index + 1}. Pressione espaco ou enter para pegar, use as setas para mover e pressione novamente para soltar.`}
+      aria-roledescription="item ordenavel"
     >
-      <LetterTile clue={clue} isDragging={isDragging} />
+      <LetterTile clue={clue} isDragging={isDragging} selectedWithKeyboard={isDragging} />
     </motion.button>
   )
 }
@@ -69,8 +72,12 @@ function SortableLetter({ clue, index }) {
 export default function InventoryPage() {
   const navigate = useNavigate()
   const { clues, solvedQuiz, letterOrder, setLetterOrder } = useGameStore()
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
   const [activeId, setActiveId] = useState(null)
+  const [screenReaderMessage, setScreenReaderMessage] = useState('Use espaco ou enter para pegar uma letra, setas para mover e espaco ou enter para soltar.')
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
 
   const orderedClues = useMemo(() => {
     const ids = clues.map((clue) => clue.id)
@@ -85,6 +92,7 @@ export default function InventoryPage() {
   const wordSolved = allLettersUnlocked && assembledWord === finalPassword
   const activeClue = orderedClues.find((clue) => clue.id === activeId)
 
+  /* Finaliza a ordenacao por mouse, toque ou teclado e persiste a nova palavra montada. */
   function handleDragEnd(event) {
     const { active, over } = event
     setActiveId(null)
@@ -92,7 +100,14 @@ export default function InventoryPage() {
       const oldIndex = orderedClues.findIndex((clue) => clue.id === active.id)
       const newIndex = orderedClues.findIndex((clue) => clue.id === over.id)
       if (oldIndex >= 0 && newIndex >= 0) {
-        setLetterOrder(arrayMove(orderedClues, oldIndex, newIndex).map((clue) => clue.id))
+        const nextOrder = arrayMove(orderedClues, oldIndex, newIndex)
+        setLetterOrder(nextOrder.map((clue) => clue.id))
+        setScreenReaderMessage(`Letra ${getLetter(nextOrder[newIndex])} movida para a posicao ${newIndex + 1}. Palavra atual: ${nextOrder.map(getLetter).join('')}.`)
+      }
+    } else if (active.id) {
+      const activeIndex = orderedClues.findIndex((clue) => clue.id === active.id)
+      if (activeIndex >= 0) {
+        setScreenReaderMessage(`Letra ${getLetter(orderedClues[activeIndex])} mantida na posicao ${activeIndex + 1}.`)
       }
     }
   }
@@ -110,12 +125,13 @@ export default function InventoryPage() {
           </div>
         </header>
 
+        {/* Explica o objetivo do inventario e deixa instrucoes de teclado conectadas por ARIA. */}
         <div className="mb-5 border-4 border-[#b6b6b6] bg-white p-4 shadow-[5px_5px_0_#f9a8d4]">
           <div className="flex items-center gap-4">
             <motion.img src={heartSvg} alt="" animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.5 }} className="h-14 w-14" />
             <div>
               <p className="text-xs font-black uppercase tracking-[0.24em] text-[#be185d]">Bolsa de letras</p>
-              <p className="text-sm font-bold leading-6">{wordSolved ? 'Perfeito. A palavra-chave esta montada e o portal ja pode abrir.' : 'Arraste as letras baguncadas para montar a palavra-chave final.'}</p>
+              <p id="letterSortInstructions" className="text-sm font-bold leading-6">{wordSolved ? 'Perfeito. A palavra-chave esta montada e o portal ja pode abrir.' : 'Arraste as letras baguncadas para montar a palavra-chave final. Pelo teclado, use espaco ou enter para pegar e soltar, e as setas para mover.'}</p>
             </div>
           </div>
         </div>
@@ -132,9 +148,23 @@ export default function InventoryPage() {
                 <p className="text-xs font-black uppercase tracking-[0.24em] text-[#be185d]">Arraste e solte</p>
                 <p className="border-4 border-[#f9a8d4] bg-white px-3 py-2 text-xs font-black text-[#831843]">{solvedQuiz.length} estrelas</p>
               </div>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={({ active }) => setActiveId(active.id)} onDragCancel={() => setActiveId(null)} onDragEnd={handleDragEnd}>
+              <div className="sr-only" aria-live="assertive" aria-atomic="true">{screenReaderMessage}</div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={({ active }) => {
+                  setActiveId(active.id)
+                  const activeIndex = orderedClues.findIndex((clue) => clue.id === active.id)
+                  setScreenReaderMessage(`Letra ${getLetter(orderedClues[activeIndex])} selecionada na posicao ${activeIndex + 1}. Use as setas para mover.`)
+                }}
+                onDragCancel={() => {
+                  setActiveId(null)
+                  setScreenReaderMessage('Movimento cancelado.')
+                }}
+                onDragEnd={handleDragEnd}
+              >
                 <SortableContext items={orderedClues.map((clue) => clue.id)} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                  <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-7" role="group" aria-describedby="letterSortInstructions" aria-label="Letras ordenaveis da palavra-chave">
                     {orderedClues.map((clue, index) => <SortableLetter key={clue.id} clue={clue} index={index} />)}
                   </div>
                 </SortableContext>
@@ -145,7 +175,7 @@ export default function InventoryPage() {
             <aside className="flex flex-col justify-between border-4 border-[#b6b6b6] bg-white p-4 shadow-[6px_6px_0_#f9a8d4]">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.24em] text-[#be185d]">Palavra montada</p>
-                <div className="mt-3 grid grid-cols-5 gap-2">
+                <div className="mt-3 grid grid-cols-4 gap-2">
                   {Array.from({ length: finalPassword.length }).map((_, index) => (
                     <span key={index} className={`flex aspect-square items-center justify-center border-4 text-xl font-black shadow-[3px_3px_0_#f9a8d4] ${orderedClues[index] ? 'border-[#2a1028] bg-[#f9a8d4] text-white' : 'border-[#b6b6b6] bg-[#fff1f7] text-[#f9a8d4]'}`}>
                       {orderedClues[index] ? getLetter(orderedClues[index]) : ''}

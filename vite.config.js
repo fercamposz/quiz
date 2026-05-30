@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Treasure Hunt',
-        short_name: 'Treasure',
+        name: 'Pixelia',
+        short_name: 'Pixelia',
         theme_color: '#d9f7a1',
         background_color: '#d9f7a1',
         display: 'standalone',

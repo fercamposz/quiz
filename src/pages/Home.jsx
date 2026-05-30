@@ -19,7 +19,8 @@ const sparkles = [
 
 export default function Home() {
   const navigate = useNavigate()
-  const dialogs = ['Bem-vinda ao Treasure Hunt.', 'Responda perguntas sobre o mundo para liberar estrelas.', 'Cada estrela entrega uma letra da palavra-chave.', 'No inventario, arraste as letras baguncadas para abrir o portal.']
+  /* ialogos iniciais que apresentam a missao antes do jogador entrar no mapa */
+  const dialogs = ['Bem-vinda ao Pixelia.', 'Responda perguntas sobre o mundo para liberar estrelas.', 'Cada estrela entrega uma letra da palavra-chave.', 'No inventario, arraste as letras baguncadas para abrir o portal.']
   const [step, setStep] = useState(0)
   const finished = step >= dialogs.length
 
@@ -41,7 +42,7 @@ export default function Home() {
         <AnimatePresence mode="wait">
           {!finished ? (
             <motion.section key="dialog" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex w-full max-w-xl flex-col items-center">
-              <motion.img src={kuromiGif} alt="Personagem guia do jogo" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="w-36 drop-shadow-[0_14px_18px_rgba(236,72,153,.5)] sm:w-48" />
+              <motion.img src={kuromiGif} alt="Logo Pixelia" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="w-36 drop-shadow-[0_14px_18px_rgba(236,72,153,.5)] sm:w-48" />
               <motion.div key={step} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="relative w-full border-4 border-[#b6b6b6] bg-white p-5 text-center text-[#35112f] shadow-[7px_7px_0_#f9a8d4]">
                 <div className="absolute -bottom-5 left-12 h-5 w-10 border-b-4 border-l-4 border-[#b6b6b6] bg-white" />
                 <p className="text-base font-black leading-7 sm:text-lg">{dialogs[step]}</p>
@@ -51,12 +52,12 @@ export default function Home() {
           ) : (
             <motion.section key="start" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="relative flex w-full max-w-5xl flex-col items-center text-center">
               <div className="relative">
-                <motion.h1 initial={{ y: 20 }} animate={{ y: 0 }} className="text-5xl font-black uppercase leading-[0.88] tracking-widest text-[#f9a8d4] sm:text-7xl md:text-8xl" style={{ WebkitTextStroke: '3px #8a1742', textShadow: '5px 5px 0 #fff, 9px 9px 0 #db2777' }}>Treasure<br />Hunt</motion.h1>
+                <motion.h1 initial={{ y: 20 }} animate={{ y: 0 }} className="text-5xl font-black uppercase leading-[0.88] tracking-widest text-[#f9a8d4] sm:text-7xl md:text-8xl" style={{ WebkitTextStroke: '3px #8a1742', textShadow: '5px 5px 0 #fff, 9px 9px 0 #db2777' }}>Pixelia</motion.h1>
                 <motion.div animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2.1 }} className="absolute -right-6 -top-8 hidden h-16 w-16 items-center justify-center border-4 border-[#8a1742] bg-white text-3xl font-black text-[#ec4899] shadow-[5px_5px_0_#db2777] sm:flex">A</motion.div>
               </div>
               <p className="mt-5 max-w-lg border-4 border-white bg-[#ec4899]/90 px-5 py-3 text-xs font-black uppercase tracking-[0.22em] text-white shadow-[5px_5px_0_#8a1742] sm:text-sm">Colete letras, arraste no inventario e descubra a palavra-chave</p>
               <div className="mt-6 grid w-full max-w-xl grid-cols-3 gap-2 px-2 sm:gap-3">
-                {['E', 'S', '?'].map((letter, index) => (
+                {['M', 'A', '?'].map((letter, index) => (
                   <motion.div key={`${letter}-${index}`} initial={{ opacity: 0, y: 18, rotate: -4 }} animate={{ opacity: 1, y: 0, rotate: index === 1 ? 2 : -2 }} transition={{ delay: index * 0.12, type: 'spring', bounce: 0.35 }} className="relative flex aspect-square items-center justify-center overflow-hidden border-4 border-[#8a1742] bg-white text-3xl font-black text-[#db2777] shadow-[5px_5px_0_#f9a8d4] sm:text-5xl" style={{ textShadow: '2px 2px 0 #fbcfe8' }}>
                     <span className="absolute inset-x-3 top-3 h-2 bg-[#fff1f7]" />
                     <span>{letter}</span>

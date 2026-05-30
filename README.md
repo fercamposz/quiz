@@ -1,4 +1,4 @@
-# Treasure Hunt
+# Pixelia
 
 Um jogo de caca ao tesouro em estilo pixel feito com React, Vite, Tailwind CSS, Framer Motion e Zustand.
 

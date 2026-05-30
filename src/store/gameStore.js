@@ -1,9 +1,12 @@
 import { create } from 'zustand'
 
-const scrambleOrder = [4, 1, 8, 3, 10, 6, 2, 9, 5, 7]
-const initialGame = { unlocked: [1], clues: [], solvedQuiz: [], hearts: 3, letterOrder: [] }
-const saved = JSON.parse(localStorage.getItem('treasure-game') || 'null')
-const persist = (state) => localStorage.setItem('treasure-game', JSON.stringify({ unlocked: state.unlocked, clues: state.clues, solvedQuiz: state.solvedQuiz, hearts: state.hearts, letterOrder: state.letterOrder }))
+const scrambleOrder = [4, 1, 6, 3, 7, 2, 5, 8, 9, 10]
+const initialGame = { unlocked: [1], clues: [], solvedQuiz: [], missedQuiz: [], hearts: 3, letterOrder: [] }
+const storageKey = 'pixeliaMarianyTenStarsGame'
+const saved = JSON.parse(localStorage.getItem(storageKey) || 'null')
+
+/* Salva apenas os dados de progresso que precisam sobreviver ao recarregamento da pagina. */
+const persist = (state) => localStorage.setItem(storageKey, JSON.stringify({ unlocked: state.unlocked, clues: state.clues, solvedQuiz: state.solvedQuiz, missedQuiz: state.missedQuiz, hearts: state.hearts, letterOrder: state.letterOrder }))
 
 export const useGameStore = create((set) => ({
   ...initialGame,
@@ -30,6 +33,12 @@ export const useGameStore = create((set) => ({
   completeQuiz: (id) => set((state) => {
     if (state.solvedQuiz.includes(id)) return state
     const updated = { ...state, solvedQuiz: [...state.solvedQuiz, id] }
+    persist(updated)
+    return updated
+  }),
+  missQuiz: (id) => set((state) => {
+    if (state.missedQuiz.includes(id)) return state
+    const updated = { ...state, missedQuiz: [...state.missedQuiz, id] }
     persist(updated)
     return updated
   }),

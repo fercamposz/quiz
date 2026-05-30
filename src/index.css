@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  button:focus-visible,
+  a:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 4px solid #be185d;
+    outline-offset: 4px;
+  }
+}

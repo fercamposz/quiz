@@ -2,13 +2,14 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 import kuromiGif from '../assets/pixel/kuromigif.gif'
+import premioJpg from '../assets/pixel/premio.jpg'
 import starPink from '../assets/pixel/star.svg'
-import heartSvg from '../assets/pixel/coracao.svg'
 
 export default function EndingPage() {
   const navigate = useNavigate()
   const { resetGame } = useGameStore()
 
+  /* Reinicia todo o progresso salvo e volta para a tela inicial do jogo. */
   function playAgain() {
     resetGame()
     navigate('/')
@@ -22,9 +23,10 @@ export default function EndingPage() {
       <motion.img src={kuromiGif} alt="" animate={{ y: [10, -10, 10] }} transition={{ repeat: Infinity, duration: 2.6, delay: 0.3, ease: 'easeInOut' }} className="absolute bottom-20 right-3 w-24 scale-x-[-1] drop-shadow-xl sm:right-10 sm:w-36 md:right-24" />
       <motion.section initial={{ opacity: 0, scale: 0.84 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', bounce: 0.45 }} className="relative z-10 flex w-full max-w-3xl flex-col items-center border-[8px] border-[#2a1028] bg-white p-6 text-center shadow-[10px_10px_0_#f9a8d4]">
         <div className="absolute -top-6 flex gap-1">{[0, 1, 2].map((item) => <img key={item} src={starPink} alt="" className="h-10 w-10" />)}</div>
-        <motion.div animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.12, 1] }} transition={{ repeat: Infinity, duration: 1.8 }} className="relative mt-5 flex h-32 w-32 items-center justify-center">
+        {/* Mostra o premio final desbloqueado depois que a palavra-chave abre o portal. */}
+        <motion.div animate={{ rotate: [0, 2, -2, 0], scale: [1, 1.04, 1] }} transition={{ repeat: Infinity, duration: 2.2 }} className="relative mt-5 flex w-full max-w-sm items-center justify-center">
           <motion.span animate={{ scale: [1, 2, 1], opacity: [0.2, 0.9, 0.2] }} transition={{ repeat: Infinity, duration: 1.2 }} className="absolute h-full w-full bg-[#f9a8d4]/60 blur-xl" />
-          <img src={heartSvg} alt="" className="relative h-24 w-24" />
+          <img src={premioJpg} alt="Premio final desbloqueado" className="relative max-h-72 w-full border-4 border-[#2a1028] object-contain shadow-[6px_6px_0_#831843]" />
         </motion.div>
         <h1 className="mt-3 text-4xl font-black uppercase leading-none tracking-widest text-[#db2777] sm:text-6xl md:text-7xl" style={{ textShadow: '3px 3px 0 #fbcfe8' }}>Premio aberto</h1>
         <div className="relative mt-7 max-w-xl border-4 border-[#b6b6b6] bg-[#fff1f7] p-5 text-base font-black leading-7 shadow-[6px_6px_0_#f9a8d4] sm:text-lg">

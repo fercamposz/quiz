@@ -6,8 +6,8 @@ import heartSvg from '../assets/pixel/coracao.svg'
 export default function ClueModal({ clue, onClose }) {
   if (!clue) return null
 
-  const isPrize = clue.id === 10
   const letter = clue.letter || finalPassword[clue.id - 1] || '?'
+  const isPrize = letter === finalPassword[finalPassword.length - 1]
 
   return (
     <AnimatePresence>
